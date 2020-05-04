@@ -11,7 +11,7 @@ if(!class_exists('PayTaro')) {
     include("./class.php");
 }
 
-logModuleCall('payTaro', 'notify', '', json_encode($_POST));
+logModuleCall('payTaro', 'notify', '', json_encode($_REQUEST));
 // log_result(http_build_query($_REQUEST));
 $GATEWAY 					= getGatewayVariables('PayTaro');
 $url						= $GATEWAY['systemurl'];
@@ -21,18 +21,18 @@ if (!$GATEWAY["type"]) die("Module Not Activated"); # Checks gateway module is a
 $appId						= $GATEWAY['appId'];
 $appSecret					= $GATEWAY['appSecret'];
 $payTaro                    = new PayTaro($appId, $appSecret);
-$strToSign = $payTaro->prepareSign($_POST);
-$verify_result = $payTaro->verify($strToSign, $_POST['sign']);
-$query = Capsule::table('tblinvoices')->where('id', $invoiceid)->where('userid', $userid)->first();
+$strToSign = $payTaro->prepareSign($_REQUEST);
+$verify_result = $payTaro->verify($strToSign, $_REQUEST['sign']);
+$query = Capsule::table('tblinvoices')->where('id', $_REQUEST['out_trade_no'])->where('userid', $userid)->first();
 if ($query->status === 'Paid') {
     die('SUCCESS');
 }
 if(!$verify_result) { 
 	logTransaction($GATEWAY["name"],$_GET,"Unsuccessful");
 } else {
-    $invoiceId = $_POST['out_trade_no'];
-    $transid = $_POST['trade_no'];
-    $paymentAmount = $_POST['total_amount'] / 100;
+    $invoiceId = $_REQUEST['out_trade_no'];
+    $transid = $_REQUEST['trade_no'];
+    $paymentAmount = $_REQUEST['total_amount'] / 100;
     $feeAmount = 0;
 
     //货币转换开始
@@ -50,7 +50,7 @@ if(!$verify_result) {
     // 货币转换结束
     checkCbTransID($transid);
     addInvoicePayment($invoiceId,$transid,$paymentAmount,$feeAmount,'PayTaro');
-    logTransaction($GATEWAY["name"],$_POST,"Successful-A");
+    logTransaction($GATEWAY["name"],$_REQUEST,"Successful-A");
     die('SUCCESS');
 }
 die('FAIL');
