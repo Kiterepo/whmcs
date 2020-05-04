@@ -5,6 +5,7 @@ include("../../../init.php");
 include("../../../includes/functions.php");
 include("../../../includes/gatewayfunctions.php");
 include("../../../includes/invoicefunctions.php");
+use \Illuminate\Database\Capsule\Manager as Capsule;
 
 if(!class_exists('PayTaro')) {
     include("./class.php");
@@ -22,6 +23,10 @@ $appSecret					= $GATEWAY['appSecret'];
 $payTaro                    = new PayTaro($appId, $appSecret);
 $strToSign = $payTaro->prepareSign($_POST);
 $verify_result = $payTaro->verify($strToSign, $_POST['sign']);
+$query = Capsule::table('tblinvoices')->where('id', $invoiceid)->where('userid', $userid)->first();
+if ($query->status === 'Paid') {
+    die('SUCCESS');
+}
 if(!$verify_result) { 
 	logTransaction($GATEWAY["name"],$_GET,"Unsuccessful");
 } else {
@@ -38,7 +43,7 @@ if(!$verify_result) {
     $userinfo 	= \Illuminate\Database\Capsule\Manager::table('tblinvoices')->where('id', $invoiceId)->first();
 
     //得到用户 货币种类
-    $currency = getCurrency( $userinfo->userid );
+    $currency = getCurrency($userinfo->userid);
 
     // 转换货币
     $paymentAmount = convertCurrency( $paymentAmount, $currencytype->id, $currency['id'] );
@@ -46,7 +51,7 @@ if(!$verify_result) {
     checkCbTransID($transid);
     addInvoicePayment($invoiceId,$transid,$paymentAmount,$feeAmount,'PayTaro');
     logTransaction($GATEWAY["name"],$_POST,"Successful-A");
-    echo 'SUCCESS';exit;
+    die('SUCCESS');
 }
-echo 'FAIL'
+die('FAIL');
 ?>
