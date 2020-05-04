@@ -28,7 +28,8 @@ if ($query->status === 'Paid') {
     die('SUCCESS');
 }
 if(!$verify_result) { 
-	logTransaction($GATEWAY["name"],$_GET,"Unsuccessful");
+    logTransaction($GATEWAY["name"],$_GET,"Unsuccessful");
+    die('FAIL');
 } else {
     $invoiceId = $_REQUEST['out_trade_no'];
     $transid = $_REQUEST['trade_no'];
