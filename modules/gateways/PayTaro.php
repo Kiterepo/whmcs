@@ -49,7 +49,7 @@ function payTaro_link($params) {
 				if (xmlhttp.readyState==4 && xmlhttp.status==200){
 					trade_state=xmlhttp.responseText;
 					if(trade_state=="SUCCESS"){
-						document.getElementById("alipayimg").style.display="none";
+						// document.getElementById("alipayimg").style.display="none";
 						document.getElementById("alipayDiv").innerHTML="支付成功";
 						window.location.reload()
 					}
