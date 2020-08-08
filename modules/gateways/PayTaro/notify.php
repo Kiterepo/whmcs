@@ -28,28 +28,21 @@ if(!$verify_result) {
 	die('FAIL');
 } else {
     $invoiceId = $_POST['out_trade_no'];
-    $transid = $_POST['trade_no'];
+    $transId = $_POST['trade_no'];
     $paymentAmount = $_POST['total_amount'] / 100;
     $feeAmount = 0;
 
-    //货币转换开始
-    //获取支付货币种类
-    $currencytype 	= \Illuminate\Database\Capsule\Manager::table('tblcurrencies')->where('id', $gatewayParams['convertto'])->first();
-
-    //获取账单 用户ID
-    $userinfo 	= \Illuminate\Database\Capsule\Manager::table('tblinvoices')->where('id', $invoiceId)->first();
-    if ($userinfo->status === 'Paid') {
+    $invoice = \Illuminate\Database\Capsule\Manager::table('tblinvoices')->where('id', $invoiceId)->first();
+    if ($invoice->status === 'Paid') {
     	die('SUCCESS');
     }
 
-    //得到用户 货币种类
-    $currency = getCurrency($userinfo->userid);
+    if ($_POST['currency'] === 'usdt') {
+        $paymentAmount = $invoice->total;
+    }
 
-    // 转换货币
-    $paymentAmount = convertCurrency($paymentAmount, $currencytype->id, $currency['id']);
-    // 货币转换结束
-    checkCbTransID($transid);
-    addInvoicePayment($invoiceId, $transid, $paymentAmount, $feeAmount, 'PayTaro');
+    checkCbTransID($transId);
+    addInvoicePayment($invoiceId, $transId, $paymentAmount, $feeAmount, 'PayTaro');
     logTransaction($GATEWAY["name"], $_POST, "Successful-A");
     die('SUCCESS');
 }
